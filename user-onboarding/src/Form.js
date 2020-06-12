@@ -20,13 +20,25 @@ function Form() {
   });
 
   //  we can also use state to hold errors
-
   const [errors, setErrors] = useState({
     name: "",
     email: "",
     password: "",
     terms: "",
   });
+
+  // new state to set our post request too. So we can console.log and see it.
+  const [post, setPost] = useState([]);
+
+  // state for whether our button should be disabled or not.
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+
+  useEffect(() => {
+    formSchema.isValid(formState).then((valid) => {
+      console.log("is it valid", valid);
+      setButtonDisabled(!valid);
+    });
+  }, [formState]);
 
   // this test and catches error on the yup formattor.  Similar to axios promises
   const validateChange = (e) => {
@@ -64,14 +76,22 @@ function Form() {
   };
 
   //   this works the submit button:
-  const submitForm = (e) => {
+  const formSubmit = (e) => {
     e.preventDefault();
-    setFormState({
-      name: "",
-      email: "",
-      password: "",
-      terms: "",
-    });
+    axios
+      .post("https://reqres.in/api/users", formState)
+      .then((res) => {
+        setPost(res.data); // get just the form data from the REST api
+
+        // reset form if successful
+        setFormState({
+          name: "",
+          email: "",
+          password: "",
+          terms: "",
+        });
+      })
+      .catch((err) => console.log(err.response));
   };
 
   return (
@@ -123,7 +143,11 @@ function Form() {
         />
         Terms and Conditions
       </label>
-      <button>Submit</button>
+
+      {/* displaying our post request data */}
+
+      {/* <pre>{JSON.stringify(post, null, 2)}</pre> */}
+      <button disabled={buttonDisabled}>Submit</button>
     </form>
   );
 }
