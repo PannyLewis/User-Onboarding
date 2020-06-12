@@ -2,16 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as yup from "yup";
 
-
+// yup help with formatting
 const formSchema = yup.object().shape({
   name: yup.string().required("Name is a required field."),
-  email: yup.string().email().required("Must be a valid email address.")  ,
+  email: yup.string().email().required("Must be a valid email address."),
   password: yup.string().required(),
   terms: yup.boolean().oneOf([true]),
-})
-
-
-
+});
 
 function Form() {
   //   declare states and initialize to an object
@@ -22,25 +19,38 @@ function Form() {
     terms: false,
   });
 
-// this ensures that an actual email is entered
-const validateEmail = (email) => {
-  // email must have @ and 2 character after the .
+  //  we can also use state to hold errors
 
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    terms: "",
+  });
 
-}
-
-
-  return (
-
+  // this test and catches error on the yup formattor
+  const validateChange = (e) => {
+    // Reach will allow us to "reach" into the schema and test only one part.
+    yup
+      .reach(formSchema, e.target.name)
+      .validate(e.target.value)
+      .then((valid) => {
+        setErrors({
+          ...errors,
+          [e.target.name]: "",
+        });
+      })
+      .catch((err) => {
+        setErrors({
+          ...errors,
+          [e.target.name]: err.errors[0],
+        });
+      });
+  };
 
   // this makes it so that whatever the user types in will be saved as values:
   const inputChanges = (e) => {
-
     // console.log("show input", e.target.value);
-
-    if(e.target.name === "email"){
-      validateEmail(e.target.value)
-    }
 
     let value =
       e.target.type === "checkbox" ? e.target.checkcked : e.target.value;
@@ -61,7 +71,7 @@ const validateEmail = (email) => {
     });
   };
 
-
+  return (
     <form>
       <label>
         Name
